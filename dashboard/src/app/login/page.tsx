@@ -36,6 +36,7 @@ export default function LoginPage() {
                                     type="email"
                                     name="email"
                                     required
+                                    defaultValue="admin@naud.com"
                                     className="w-full px-4 py-3 rounded-xl bg-zinc-950/50 border border-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
                                     placeholder="admin@naud.com"
                                 />
@@ -47,6 +48,7 @@ export default function LoginPage() {
                                     type="password"
                                     name="password"
                                     required
+                                    defaultValue="1234@@"
                                     className="w-full px-4 py-3 rounded-xl bg-zinc-950/50 border border-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
                                     placeholder="••••••••"
                                 />

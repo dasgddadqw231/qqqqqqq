@@ -12,6 +12,17 @@ CREATE TYPE job_status AS ENUM ('pending', 'running', 'success', 'failed');
 -- Enum for Account Proxy Health
 CREATE TYPE proxy_status AS ENUM ('active', 'failing', 'dead');
 
+-- Personas Table: AI behavior templates for accounts
+CREATE TABLE personas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    system_prompt TEXT NOT NULL,
+    platform platform_type,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Proxies Table: Stores proxy information for AdsPower
 CREATE TABLE proxies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -29,9 +40,9 @@ CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     platform platform_type NOT NULL,
     username VARCHAR(255) NOT NULL,
-    adspower_id VARCHAR(100), -- The ID of the generic profile in AdsPower
+    adspower_id VARCHAR(100),
     proxy_id UUID REFERENCES proxies(id) ON DELETE SET NULL,
-    persona_context TEXT, -- Information about the account's persona/behavior to pass to Gemini
+    persona_id UUID REFERENCES personas(id) ON DELETE SET NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -43,10 +54,10 @@ CREATE TABLE jobs (
     account_id UUID REFERENCES accounts(id) ON DELETE CASCADE,
     type job_type NOT NULL,
     status job_status DEFAULT 'pending',
-    target_url TEXT, -- E.g., The URL of the YouTube video or Instagram Reel
-    action_parameters JSONB, -- Additional data (e.g., watch duration ranges, reply context)
-    ai_generated_content TEXT, -- Results from Gemini if applicable
-    scheduled_timer TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    target_url TEXT,
+    action_parameters JSONB,
+    ai_generated_content TEXT,
+    scheduled_for TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
     error_log TEXT,
@@ -54,5 +65,19 @@ CREATE TABLE jobs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Job Index for faster polling by the Behavior Engine
-CREATE INDEX idx_jobs_status_scheduled ON jobs (status, scheduled_timer);
+-- Indexes
+CREATE INDEX idx_jobs_status_scheduled ON jobs (status, scheduled_for);
+CREATE INDEX idx_accounts_platform ON accounts (platform);
+CREATE INDEX idx_accounts_persona ON accounts (persona_id);
+
+-- Enable Row Level Security
+ALTER TABLE personas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+
+-- Policies (allow all for authenticated users)
+CREATE POLICY "Allow all for authenticated" ON personas FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for authenticated" ON proxies FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for authenticated" ON accounts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for authenticated" ON jobs FOR ALL TO authenticated USING (true) WITH CHECK (true);

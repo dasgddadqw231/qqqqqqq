@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
-import { LayoutDashboard, CalendarDays, Users, Flame, Settings } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, Users, BrainCircuit, Shield, Flame, Settings, Zap } from 'lucide-react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -33,13 +33,25 @@ export default function RootLayout({
               <LayoutDashboard className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
               <span className="font-medium text-sm">Dashboard</span>
             </Link>
+            <Link href="/accounts" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
+              <Users className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
+              <span className="font-medium text-sm">Accounts</span>
+            </Link>
+            <Link href="/personas" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
+              <BrainCircuit className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
+              <span className="font-medium text-sm">AI Personas</span>
+            </Link>
             <Link href="/calendar" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
               <CalendarDays className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
               <span className="font-medium text-sm">Workloads</span>
             </Link>
-            <Link href="/personas" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
-              <Users className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
-              <span className="font-medium text-sm">AI Personas</span>
+            <Link href="/proxies" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
+              <Shield className="w-4 h-4 group-hover:text-purple-400 transition-colors" />
+              <span className="font-medium text-sm">Proxies</span>
+            </Link>
+            <Link href="/engage" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-900 transition-all text-zinc-400 hover:text-white group">
+              <Zap className="w-4 h-4 group-hover:text-yellow-400 transition-colors" />
+              <span className="font-medium text-sm">Engage</span>
             </Link>
           </nav>
 
