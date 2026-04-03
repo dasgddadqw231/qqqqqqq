@@ -160,7 +160,7 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-300">Platform</label>
-                <Select value={formPlatform} onValueChange={setFormPlatform}>
+                <Select value={formPlatform} onValueChange={(v) => setFormPlatform(v ?? '')}>
                     <SelectTrigger className="w-full bg-zinc-950/50 border-white/10 text-white">
                         <SelectValue placeholder="All platforms" />
                     </SelectTrigger>

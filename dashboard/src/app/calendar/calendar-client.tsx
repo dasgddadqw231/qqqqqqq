@@ -168,7 +168,7 @@ export default function CalendarClient({
                             {/* Account select */}
                             <div className="space-y-1.5">
                                 <label className="text-xs font-medium text-zinc-400">Account</label>
-                                <Select value={formAccountId} onValueChange={setFormAccountId}>
+                                <Select value={formAccountId} onValueChange={(v) => setFormAccountId(v ?? '')}>
                                     <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
                                         <SelectValue placeholder="Select account (optional)" />
                                     </SelectTrigger>
@@ -184,7 +184,7 @@ export default function CalendarClient({
                             {/* Job type */}
                             <div className="space-y-1.5">
                                 <label className="text-xs font-medium text-zinc-400">Job Type *</label>
-                                <Select value={formType} onValueChange={setFormType}>
+                                <Select value={formType} onValueChange={(v) => setFormType(v ?? '')}>
                                     <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
                                         <SelectValue placeholder="Select job type" />
                                     </SelectTrigger>

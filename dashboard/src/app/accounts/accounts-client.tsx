@@ -171,7 +171,7 @@ export default function AccountsClient({
             {/* Platform */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Platform *</label>
-                <Select value={formPlatform} onValueChange={setFormPlatform}>
+                <Select value={formPlatform} onValueChange={(v) => setFormPlatform(v ?? '')}>
                     <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
                         <SelectValue placeholder="Select platform" />
                     </SelectTrigger>
@@ -197,7 +197,7 @@ export default function AccountsClient({
             {/* Proxy */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Proxy</label>
-                <Select value={formProxyId} onValueChange={setFormProxyId}>
+                <Select value={formProxyId} onValueChange={(v) => setFormProxyId(v ?? '')}>
                     <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
                         <SelectValue placeholder="Select proxy (optional)" />
                     </SelectTrigger>
@@ -213,7 +213,7 @@ export default function AccountsClient({
             {/* Persona */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Persona</label>
-                <Select value={formPersonaId} onValueChange={setFormPersonaId}>
+                <Select value={formPersonaId} onValueChange={(v) => setFormPersonaId(v ?? '')}>
                     <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
                         <SelectValue placeholder="Select persona (optional)" />
                     </SelectTrigger>
