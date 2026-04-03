@@ -58,29 +58,29 @@ export default async function DashboardPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[40%] bg-purple-600/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-10 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-10 space-y-6 lg:space-y-8">
 
         {/* Header */}
-        <header className="flex justify-between items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-              <Zap className="w-6 h-6 text-blue-400" />
+        <header className="flex flex-col sm:flex-row justify-between gap-4 sm:items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-2xl">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <div className="p-2.5 lg:p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl lg:rounded-2xl">
+              <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">NAUD Central Command</h1>
-              <p className="text-sm text-zinc-400">Social-Flow Enterprise Edition</p>
+              <h1 className="text-xl lg:text-2xl font-bold tracking-tight">NAUD Central Command</h1>
+              <p className="text-xs lg:text-sm text-zinc-400">Social-Flow Enterprise Edition</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 bg-zinc-800/50 rounded-full border border-white/5 text-sm">
+            <div className="flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-zinc-800/50 rounded-full border border-white/5 text-xs lg:text-sm">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{stats.activeAccountCount}/{stats.accountCount} Active Accounts</span>
+              <span>{stats.activeAccountCount}/{stats.accountCount} Active</span>
             </div>
           </div>
         </header>
 
         {/* Top metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-6">
           <Card className="bg-zinc-900/40 border-white/5 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-zinc-400">Active Accounts</CardTitle>
@@ -147,8 +147,8 @@ export default async function DashboardPage() {
               <CardDescription className="text-zinc-400">Last 10 scheduled jobs across all platforms</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <Table>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table className="min-w-[500px]">
               <TableHeader className="bg-zinc-900/20">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="text-zinc-400">Job Type</TableHead>

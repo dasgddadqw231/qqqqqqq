@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -30,12 +29,9 @@ import {
     TableCell,
 } from '@/components/ui/table'
 import { Plus, Pencil, Trash2, Power, Loader2, RefreshCw } from 'lucide-react'
-import type { Account, Persona, Proxy, Platform } from '@/lib/types'
-import { PLATFORM_LABELS } from '@/lib/types'
+import type { Account, Persona, Proxy } from '@/lib/types'
 import { createAccount, updateAccount, deleteAccount, toggleAccount } from '@/app/actions/accounts'
 import { syncAdsPowerProfiles } from '@/app/actions/adspower-sync'
-
-const PLATFORMS: Platform[] = ['instagram', 'threads', 'youtube']
 
 export default function AccountsClient({
     accounts,
@@ -49,9 +45,6 @@ export default function AccountsClient({
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
 
-    // Filter
-    const [filterPlatform, setFilterPlatform] = useState<string>('all')
-
     // Dialog state
     const [addOpen, setAddOpen] = useState(false)
     const [editOpen, setEditOpen] = useState(false)
@@ -59,19 +52,13 @@ export default function AccountsClient({
 
     // Form state
     const [formUsername, setFormUsername] = useState('')
-    const [formPlatform, setFormPlatform] = useState<string>('')
     const [formAdspowerId, setFormAdspowerId] = useState('')
     const [formProxyId, setFormProxyId] = useState<string>('')
     const [formPersonaId, setFormPersonaId] = useState<string>('')
     const [formError, setFormError] = useState('')
 
-    const filteredAccounts = filterPlatform === 'all'
-        ? accounts
-        : accounts.filter((a) => a.platform === filterPlatform)
-
     function resetForm() {
         setFormUsername('')
-        setFormPlatform('')
         setFormAdspowerId('')
         setFormProxyId('')
         setFormPersonaId('')
@@ -81,7 +68,6 @@ export default function AccountsClient({
     function openEditDialog(acc: Account) {
         setEditingAccount(acc)
         setFormUsername(acc.username)
-        setFormPlatform(acc.platform)
         setFormAdspowerId(acc.adspower_id || '')
         setFormProxyId(acc.proxy_id || '')
         setFormPersonaId(acc.persona_id || '')
@@ -91,13 +77,13 @@ export default function AccountsClient({
 
     async function handleCreate() {
         setFormError('')
-        if (!formUsername || !formPlatform) {
-            setFormError('Username and platform are required')
+        if (!formUsername) {
+            setFormError('Username is required')
             return
         }
         const fd = new FormData()
         fd.set('username', formUsername)
-        fd.set('platform', formPlatform)
+        fd.set('platform', 'threads')
         if (formAdspowerId) fd.set('adspower_id', formAdspowerId)
         if (formProxyId) fd.set('proxy_id', formProxyId)
         if (formPersonaId) fd.set('persona_id', formPersonaId)
@@ -115,13 +101,13 @@ export default function AccountsClient({
     async function handleUpdate() {
         if (!editingAccount) return
         setFormError('')
-        if (!formUsername || !formPlatform) {
-            setFormError('Username and platform are required')
+        if (!formUsername) {
+            setFormError('Username is required')
             return
         }
         const fd = new FormData()
         fd.set('username', formUsername)
-        fd.set('platform', formPlatform)
+        fd.set('platform', editingAccount.platform)
         if (formAdspowerId) fd.set('adspower_id', formAdspowerId)
         if (formProxyId) fd.set('proxy_id', formProxyId)
         if (formPersonaId) fd.set('persona_id', formPersonaId)
@@ -167,22 +153,6 @@ export default function AccountsClient({
                     onChange={(e) => setFormUsername(e.target.value)}
                     className="bg-zinc-800/50 border-white/10 text-white placeholder:text-zinc-500"
                 />
-            </div>
-            {/* Platform */}
-            <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-400">Platform *</label>
-                <Select value={formPlatform} onValueChange={(v) => setFormPlatform(v ?? '')}>
-                    <SelectTrigger className="w-full bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-white/10 text-white">
-                        {PLATFORMS.map((p) => (
-                            <SelectItem key={p} value={p}>
-                                {PLATFORM_LABELS[p]}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
             </div>
             {/* AdsPower ID */}
             <div className="space-y-1.5">
@@ -230,18 +200,18 @@ export default function AccountsClient({
     )
 
     return (
-        <div className="p-10 space-y-8 min-h-screen">
+        <div className="p-4 lg:p-10 space-y-6 lg:space-y-8 min-h-screen">
             {/* Header */}
-            <header className="flex justify-between items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl">
+            <header className="flex flex-col sm:flex-row justify-between gap-4 sm:items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-2xl">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">
+                    <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-white">
                         Account Management
                     </h1>
-                    <p className="text-sm text-zinc-400 mt-1">
+                    <p className="text-xs lg:text-sm text-zinc-400 mt-1">
                         Manage social accounts, proxies, and persona assignments.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                     {isPending && (
                         <Loader2 className="w-4 h-4 text-zinc-500 animate-spin" />
                     )}
@@ -283,41 +253,14 @@ export default function AccountsClient({
                 </div>
             </header>
 
-            {/* Filter */}
-            <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-zinc-500 mr-2">Filter:</span>
-                <Button
-                    variant={filterPlatform === 'all' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilterPlatform('all')}
-                    className={filterPlatform === 'all' ? 'bg-emerald-600 text-white' : 'border-white/10 text-zinc-400 hover:text-white'}
-                >
-                    All
-                </Button>
-                {PLATFORMS.map((p) => (
-                    <Button
-                        key={p}
-                        variant={filterPlatform === p ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setFilterPlatform(p)}
-                        className={filterPlatform === p ? 'bg-emerald-600 text-white' : 'border-white/10 text-zinc-400 hover:text-white'}
-                    >
-                        {PLATFORM_LABELS[p]}
-                    </Button>
-                ))}
-                <span className="ml-auto text-xs text-zinc-500">
-                    {filteredAccounts.length} account{filteredAccounts.length !== 1 ? 's' : ''}
-                </span>
-            </div>
-
             {/* Table */}
             <Card className="bg-zinc-900/40 border-white/5 backdrop-blur-sm">
-                <CardContent className="p-0">
-                    <Table>
+                <CardContent className="p-0 overflow-x-auto">
+                    <Table className="min-w-[600px]">
                         <TableHeader>
                             <TableRow className="border-white/5 hover:bg-transparent">
                                 <TableHead className="text-zinc-400">Username</TableHead>
-                                <TableHead className="text-zinc-400">Platform</TableHead>
+                                <TableHead className="text-zinc-400">AdsPower ID</TableHead>
                                 <TableHead className="text-zinc-400">Persona</TableHead>
                                 <TableHead className="text-zinc-400">Proxy</TableHead>
                                 <TableHead className="text-zinc-400">Status</TableHead>
@@ -325,31 +268,20 @@ export default function AccountsClient({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredAccounts.length === 0 ? (
+                            {accounts.length === 0 ? (
                                 <TableRow className="border-white/5">
                                     <TableCell colSpan={6} className="text-center py-12 text-zinc-500">
                                         No accounts found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredAccounts.map((acc) => (
+                                accounts.map((acc) => (
                                     <TableRow key={acc.id} className="border-white/5 hover:bg-zinc-800/30">
                                         <TableCell className="text-white font-medium">
                                             @{acc.username}
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={
-                                                    acc.platform === 'instagram'
-                                                        ? 'bg-pink-500/10 text-pink-400 border-pink-500/20'
-                                                        : acc.platform === 'threads'
-                                                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                                            : 'bg-red-500/10 text-red-400 border-red-500/20'
-                                                }
-                                            >
-                                                {PLATFORM_LABELS[acc.platform]}
-                                            </Badge>
+                                        <TableCell className="text-zinc-400 font-mono text-xs">
+                                            {acc.adspower_id || <span className="text-zinc-600">--</span>}
                                         </TableCell>
                                         <TableCell className="text-zinc-400">
                                             {acc.persona?.name || <span className="text-zinc-600">--</span>}

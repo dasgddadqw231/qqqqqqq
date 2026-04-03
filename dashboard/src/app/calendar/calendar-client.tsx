@@ -135,14 +135,14 @@ export default function CalendarClient({
     }
 
     return (
-        <div className="p-10 space-y-8 min-h-screen">
+        <div className="p-4 lg:p-10 space-y-6 lg:space-y-8 min-h-screen">
             {/* Header */}
-            <header className="flex justify-between items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl">
+            <header className="flex flex-col sm:flex-row justify-between gap-4 sm:items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-2xl">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">
+                    <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-white">
                         Workload Intelligence
                     </h1>
-                    <p className="text-sm text-zinc-400 mt-1">
+                    <p className="text-xs lg:text-sm text-zinc-400 mt-1">
                         Schedule and orchestrate automated AI campaigns.
                     </p>
                 </div>
@@ -230,7 +230,7 @@ export default function CalendarClient({
                 </Dialog>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
                 {/* Left: Calendar + Stats */}
                 <div className="lg:col-span-1 space-y-6">
                     <Card className="bg-zinc-900/40 border-white/5 backdrop-blur-sm">
@@ -309,7 +309,7 @@ export default function CalendarClient({
                                     {filteredJobs.map((job) => (
                                         <div
                                             key={job.id}
-                                            className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-zinc-950/50 hover:bg-zinc-800/40 transition-colors group"
+                                            className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 rounded-xl border border-white/5 bg-zinc-950/50 hover:bg-zinc-800/40 transition-colors group"
                                         >
                                             {/* Time */}
                                             <div className="flex flex-col items-center justify-center px-3 border-r border-white/5 min-w-[70px]">
@@ -347,7 +347,7 @@ export default function CalendarClient({
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
                                                 {job.status === 'pending' && (
                                                     <Button
                                                         variant="ghost"

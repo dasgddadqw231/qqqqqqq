@@ -128,3 +128,9 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

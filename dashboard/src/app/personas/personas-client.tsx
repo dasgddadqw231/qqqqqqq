@@ -175,19 +175,19 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
     )
 
     return (
-        <div className="p-10 space-y-8 min-h-screen">
+        <div className="p-4 lg:p-10 space-y-6 lg:space-y-8 min-h-screen">
             {/* Header */}
-            <header className="flex justify-between items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
-                        <BrainCircuit className="w-6 h-6 text-purple-400" />
+            <header className="flex flex-col lg:flex-row justify-between gap-4 lg:items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-2xl">
+                <div className="flex items-center gap-3 lg:gap-4">
+                    <div className="p-2.5 lg:p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl lg:rounded-2xl shrink-0">
+                        <BrainCircuit className="w-5 h-5 lg:w-6 lg:h-6 text-purple-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-white">AI Persona Matrix</h1>
-                        <p className="text-sm text-zinc-400 mt-1">Configure Gemini LLM behaviors for behavior emulation.</p>
+                        <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-white">AI Persona Matrix</h1>
+                        <p className="text-xs lg:text-sm text-zinc-400 mt-1">Configure Gemini LLM behaviors for behavior emulation.</p>
                     </div>
                 </div>
-                <div className="flex gap-4 items-center">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
                     <div className="relative">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                         <input
@@ -195,12 +195,12 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
                             placeholder="Search personas..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="bg-zinc-950/50 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-purple-500/50 text-white placeholder-zinc-500"
+                            className="w-full bg-zinc-950/50 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-purple-500/50 text-white placeholder-zinc-500"
                         />
                     </div>
                     <button
                         onClick={openCreate}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-purple-900/20"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-purple-900/20 shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Create Persona</span>

@@ -117,19 +117,19 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Shield className="w-6 h-6 text-white" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 lg:gap-4">
+          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0">
+            <Shield className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Proxies</h1>
-            <p className="text-zinc-500 text-sm mt-0.5">{proxies.length} proxy servers configured</p>
+            <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Proxies</h1>
+            <p className="text-zinc-500 text-xs lg:text-sm mt-0.5">{proxies.length} proxy servers configured</p>
           </div>
         </div>
-        <Button onClick={openCreate} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0">
+        <Button onClick={openCreate} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 self-start sm:self-auto">
           <Plus className="w-4 h-4" data-icon="inline-start" />
           Add Proxy
         </Button>
@@ -162,8 +162,8 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
       )}
 
       {/* Table */}
-      <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm overflow-hidden">
-        <Table>
+      <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-white/5 hover:bg-transparent">
               <TableHead className="w-10">
