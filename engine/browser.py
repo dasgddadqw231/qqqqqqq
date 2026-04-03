@@ -11,7 +11,7 @@ import adspower
 
 
 @asynccontextmanager
-async def connect(profile_id: str) -> AsyncIterator[BrowserContext]:
+async def connect(profile_id: str, *, headless: bool = False) -> AsyncIterator[BrowserContext]:
     """AdsPower 프로필의 브라우저에 Playwright로 접속.
 
     사용 예:
@@ -19,7 +19,7 @@ async def connect(profile_id: str) -> AsyncIterator[BrowserContext]:
             page = ctx.pages[0] or await ctx.new_page()
             await page.goto("https://instagram.com")
     """
-    info = adspower.start_browser(profile_id)
+    info = adspower.start_browser(profile_id, headless=headless)
     ws_endpoint = info["ws"]["puppeteer"]
 
     pw = await async_playwright().start()

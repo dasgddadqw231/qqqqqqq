@@ -129,13 +129,19 @@ def delete_cookies(profile_id: str) -> None:
 
 # ── 브라우저 시작/종료 ──────────────────────────────────
 
-def start_browser(profile_id: str) -> dict:
+def start_browser(profile_id: str, *, headless: bool = False) -> dict:
     """브라우저 시작. ws endpoint와 webdriver path 반환.
+
+    Args:
+        headless: True면 화면에 브라우저 창을 띄우지 않음.
 
     Returns:
         {"ws": {"puppeteer": "ws://...", "selenium": "..."}, "debug_port": "...", ...}
     """
-    data = _get("/api/v1/browser/start", {"user_id": profile_id})
+    params: dict = {"user_id": profile_id}
+    if headless:
+        params["headless"] = 1
+    data = _get("/api/v1/browser/start", params)
     return data["data"]
 
 
