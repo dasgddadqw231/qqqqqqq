@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 
 const ADSPOWER_BASE = process.env.ADSPOWER_BASE || 'http://local.adspower.net:50325'
@@ -55,8 +54,6 @@ export async function syncAdsPowerProfiles() {
       if (error) return { error: error.message }
     }
 
-    revalidatePath('/')
-    revalidatePath('/accounts')
     return { data: { synced: newProfiles.length, total: adsProfiles.length } }
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Sync failed' }

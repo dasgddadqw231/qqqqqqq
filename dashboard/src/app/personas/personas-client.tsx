@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog'
@@ -16,9 +15,9 @@ interface PersonasClientProps {
     personas: Persona[]
 }
 
-export default function PersonasClient({ personas }: PersonasClientProps) {
-    const router = useRouter()
-    const [isPending, startTransition] = useTransition()
+export default function PersonasClient({ personas: initialPersonas }: PersonasClientProps) {
+    const [personas, setPersonas] = useState(initialPersonas)
+    const [saving, setSaving] = useState(false)
 
     const [search, setSearch] = useState('')
     const [createOpen, setCreateOpen] = useState(false)
@@ -64,61 +63,67 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
     }
 
     async function handleCreate() {
+        setSaving(true)
         const formData = new FormData()
         formData.append('name', formName)
         formData.append('system_prompt', formPrompt)
         if (formPlatform) formData.append('platform', formPlatform)
 
-        startTransition(async () => {
-            const result = await createPersona(formData)
-            if (result.error) {
-                setFormError(result.error)
-                return
-            }
-            setCreateOpen(false)
-            resetForm()
-            router.refresh()
-        })
+        const result = await createPersona(formData)
+        setSaving(false)
+        if (result.error) {
+            setFormError(result.error)
+            return
+        }
+        if (result.data) {
+            setPersonas(prev => [result.data!, ...prev])
+        }
+        setCreateOpen(false)
+        resetForm()
     }
 
     async function handleUpdate() {
         if (!selectedPersona) return
+        setSaving(true)
         const formData = new FormData()
         formData.append('name', formName)
         formData.append('system_prompt', formPrompt)
         if (formPlatform) formData.append('platform', formPlatform)
 
-        startTransition(async () => {
-            const result = await updatePersona(selectedPersona.id, formData)
-            if (result.error) {
-                setFormError(result.error)
-                return
-            }
-            setEditOpen(false)
-            resetForm()
-            router.refresh()
-        })
+        const result = await updatePersona(selectedPersona.id, formData)
+        setSaving(false)
+        if (result.error) {
+            setFormError(result.error)
+            return
+        }
+        if (result.data) {
+            setPersonas(prev => prev.map(p => p.id === selectedPersona.id ? result.data! : p))
+        }
+        setEditOpen(false)
+        resetForm()
     }
 
     async function handleDelete() {
         if (!selectedPersona) return
-        startTransition(async () => {
-            const result = await deletePersona(selectedPersona.id)
-            if (result.error) {
-                setFormError(result.error)
-                return
-            }
-            setDeleteOpen(false)
-            setSelectedPersona(null)
-            router.refresh()
-        })
+        setSaving(true)
+        const id = selectedPersona.id
+        setPersonas(prev => prev.filter(p => p.id !== id))
+        setDeleteOpen(false)
+        setSelectedPersona(null)
+        const result = await deletePersona(id)
+        setSaving(false)
+        if (result.error) {
+            setFormError(result.error)
+            setPersonas(initialPersonas)
+        }
     }
 
     async function handleToggle(persona: Persona) {
-        startTransition(async () => {
-            await togglePersona(persona.id, !persona.is_active)
-            router.refresh()
-        })
+        setPersonas(prev => prev.map(p => p.id === persona.id ? { ...p, is_active: !p.is_active } : p))
+        const result = await togglePersona(persona.id, !persona.is_active)
+        if (result.data) {
+            setPersonas(prev => prev.map(p => p.id === persona.id ? result.data! : p))
+        }
     }
 
     function getAccountCount(persona: Persona): number {
@@ -238,7 +243,7 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
                             <div className="flex gap-1 ml-2 shrink-0">
                                 <button
                                     onClick={() => handleToggle(persona)}
-                                    disabled={isPending}
+                                    disabled={saving}
                                     className={`p-1.5 rounded-lg transition-colors ${persona.is_active
                                         ? 'text-emerald-400 hover:bg-emerald-500/10'
                                         : 'text-zinc-500 hover:bg-zinc-800'
@@ -309,10 +314,10 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
                         </DialogClose>
                         <Button
                             onClick={handleCreate}
-                            disabled={isPending || !formName || !formPrompt}
+                            disabled={saving || !formName || !formPrompt}
                             className="bg-purple-600 hover:bg-purple-500 text-white"
                         >
-                            {isPending ? 'Creating...' : 'Create Persona'}
+                            {saving ? 'Creating...' : 'Create Persona'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -334,10 +339,10 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
                         </DialogClose>
                         <Button
                             onClick={handleUpdate}
-                            disabled={isPending || !formName || !formPrompt}
+                            disabled={saving || !formName || !formPrompt}
                             className="bg-purple-600 hover:bg-purple-500 text-white"
                         >
-                            {isPending ? 'Saving...' : 'Save Changes'}
+                            {saving ? 'Saving...' : 'Save Changes'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -363,11 +368,11 @@ export default function PersonasClient({ personas }: PersonasClientProps) {
                         </DialogClose>
                         <Button
                             onClick={handleDelete}
-                            disabled={isPending}
+                            disabled={saving}
                             variant="destructive"
                             className="bg-red-600 hover:bg-red-500 text-white"
                         >
-                            {isPending ? 'Deleting...' : 'Delete'}
+                            {saving ? 'Deleting...' : 'Delete'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

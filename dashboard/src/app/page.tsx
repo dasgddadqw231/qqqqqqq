@@ -4,7 +4,6 @@ import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Activity, Users, Zap, Shield, Globe, Settings } from "lucide-react"
 import { getDashboardStats } from "@/app/actions/dashboard"
-import { syncAdsPowerProfiles } from "@/app/actions/adspower-sync"
 import { JOB_TYPE_LABELS, PLATFORM_LABELS } from "@/lib/types"
 import type { JobType, JobStatus, Platform } from "@/lib/types"
 
@@ -33,7 +32,6 @@ function formatScheduledTime(dateStr: string) {
 }
 
 export default async function DashboardPage() {
-  await syncAdsPowerProfiles()
   const result = await getDashboardStats()
 
   const stats = "data" in result && result.data

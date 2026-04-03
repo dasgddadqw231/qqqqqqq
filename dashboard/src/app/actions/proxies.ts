@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import type { ProxyStatus } from '@/lib/types'
 
@@ -28,14 +27,14 @@ export async function createProxy(formData: FormData) {
     return { error: 'IP and port are required' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('proxies')
     .insert({ ip, port, username, password })
+    .select()
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/proxies')
-  return {}
+  return { data }
 }
 
 export async function updateProxy(id: string, formData: FormData) {
@@ -50,15 +49,15 @@ export async function updateProxy(id: string, formData: FormData) {
     return { error: 'IP and port are required' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('proxies')
     .update({ ip, port, username, password })
     .eq('id', id)
+    .select()
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/proxies')
-  return {}
+  return { data }
 }
 
 export async function deleteProxy(id: string) {
@@ -70,21 +69,19 @@ export async function deleteProxy(id: string) {
     .eq('id', id)
 
   if (error) return { error: error.message }
-
-  revalidatePath('/proxies')
   return {}
 }
 
 export async function updateProxyStatus(id: string, status: ProxyStatus) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('proxies')
     .update({ status, last_checked_at: new Date().toISOString() })
     .eq('id', id)
+    .select()
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/proxies')
-  return {}
+  return { data }
 }

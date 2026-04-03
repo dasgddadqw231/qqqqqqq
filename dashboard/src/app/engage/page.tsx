@@ -1,11 +1,8 @@
 import { getAccounts } from '@/app/actions/accounts'
-import { syncAdsPowerProfiles } from '@/app/actions/adspower-sync'
 import type { Account } from '@/lib/types'
 import EngageClient from './engage-client'
 
 export default async function EngagePage() {
-    await syncAdsPowerProfiles()
-
     const result = await getAccounts()
     const allAccounts: Account[] = ('data' in result && result.data) ? result.data : []
 

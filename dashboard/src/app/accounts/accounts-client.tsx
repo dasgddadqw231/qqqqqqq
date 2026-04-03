@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -34,7 +34,7 @@ import { createAccount, updateAccount, deleteAccount, toggleAccount } from '@/ap
 import { syncAdsPowerProfiles } from '@/app/actions/adspower-sync'
 
 export default function AccountsClient({
-    accounts,
+    accounts: initialAccounts,
     personas,
     proxies,
 }: {
@@ -43,7 +43,8 @@ export default function AccountsClient({
     proxies: Proxy[]
 }) {
     const router = useRouter()
-    const [isPending, startTransition] = useTransition()
+    const [accounts, setAccounts] = useState(initialAccounts)
+    const [syncing, setSyncing] = useState(false)
 
     // Dialog state
     const [addOpen, setAddOpen] = useState(false)
@@ -93,9 +94,11 @@ export default function AccountsClient({
             setFormError(result.error)
             return
         }
+        if (result.data) {
+            setAccounts(prev => [result.data!, ...prev])
+        }
         setAddOpen(false)
         resetForm()
-        startTransition(() => router.refresh())
     }
 
     async function handleUpdate() {
@@ -117,24 +120,40 @@ export default function AccountsClient({
             setFormError(result.error)
             return
         }
+        if (result.data) {
+            setAccounts(prev => prev.map(a => a.id === editingAccount.id ? result.data! : a))
+        }
         setEditOpen(false)
         setEditingAccount(null)
         resetForm()
-        startTransition(() => router.refresh())
     }
 
     async function handleDelete(id: string) {
+        // Optimistic: remove immediately
+        setAccounts(prev => prev.filter(a => a.id !== id))
         const result = await deleteAccount(id)
-        if (!result.error) {
-            startTransition(() => router.refresh())
+        if (result.error) {
+            // Revert on error
+            setAccounts(initialAccounts)
         }
     }
 
     async function handleToggle(id: string, currentActive: boolean) {
+        // Optimistic: toggle immediately
+        setAccounts(prev => prev.map(a => a.id === id ? { ...a, is_active: !currentActive } : a))
         const result = await toggleAccount(id, !currentActive)
-        if (!result.error) {
-            startTransition(() => router.refresh())
+        if (result.error) {
+            setAccounts(prev => prev.map(a => a.id === id ? { ...a, is_active: currentActive } : a))
+        } else if (result.data) {
+            setAccounts(prev => prev.map(a => a.id === id ? result.data! : a))
         }
+    }
+
+    async function handleSync() {
+        setSyncing(true)
+        await syncAdsPowerProfiles()
+        setSyncing(false)
+        router.refresh()
     }
 
     const accountFormFields = (
@@ -144,7 +163,6 @@ export default function AccountsClient({
                     {formError}
                 </p>
             )}
-            {/* Username */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Username *</label>
                 <Input
@@ -154,7 +172,6 @@ export default function AccountsClient({
                     className="bg-zinc-800/50 border-white/10 text-white placeholder:text-zinc-500"
                 />
             </div>
-            {/* AdsPower ID */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">AdsPower ID</label>
                 <Input
@@ -164,7 +181,6 @@ export default function AccountsClient({
                     className="bg-zinc-800/50 border-white/10 text-white placeholder:text-zinc-500"
                 />
             </div>
-            {/* Proxy */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Proxy</label>
                 <Select value={formProxyId} onValueChange={(v) => setFormProxyId(v ?? '')}>
@@ -180,7 +196,6 @@ export default function AccountsClient({
                     </SelectContent>
                 </Select>
             </div>
-            {/* Persona */}
             <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-400">Persona</label>
                 <Select value={formPersonaId} onValueChange={(v) => setFormPersonaId(v ?? '')}>
@@ -201,7 +216,6 @@ export default function AccountsClient({
 
     return (
         <div className="p-4 lg:p-10 space-y-6 lg:space-y-8 min-h-screen">
-            {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between gap-4 sm:items-center bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-2xl">
                 <div>
                     <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-white">
@@ -212,18 +226,13 @@ export default function AccountsClient({
                     </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {isPending && (
-                        <Loader2 className="w-4 h-4 text-zinc-500 animate-spin" />
-                    )}
                     <Button
                         variant="outline"
                         className="border-white/10 text-zinc-400 hover:text-white rounded-xl h-10 px-4 gap-2"
-                        onClick={async () => {
-                            const result = await syncAdsPowerProfiles()
-                            startTransition(() => router.refresh())
-                        }}
+                        disabled={syncing}
+                        onClick={handleSync}
                     >
-                        <RefreshCw className="w-4 h-4" />
+                        <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
                         Sync AdsPower
                     </Button>
                     <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetForm(); }}>
@@ -253,7 +262,6 @@ export default function AccountsClient({
                 </div>
             </header>
 
-            {/* Table */}
             <Card className="bg-zinc-900/40 border-white/5 backdrop-blur-sm">
                 <CardContent className="p-0 overflow-x-auto">
                     <Table className="min-w-[600px]">
@@ -337,7 +345,6 @@ export default function AccountsClient({
                 </CardContent>
             </Card>
 
-            {/* Edit Dialog */}
             <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) { setEditingAccount(null); resetForm(); } }}>
                 <DialogContent className="bg-zinc-900 border border-white/10 text-white sm:max-w-md">
                     <DialogHeader>

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Calendar } from '@/components/ui/calendar'
 import { Badge } from '@/components/ui/badge'
@@ -22,7 +21,7 @@ import {
     SelectItem,
     SelectValue,
 } from '@/components/ui/select'
-import { Plus, Clock, Link2, Trash2, Play, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { Plus, Clock, Link2, Trash2, Play, CheckCircle2, XCircle } from 'lucide-react'
 import type { Job, Account, JobType, JobStatus } from '@/lib/types'
 import { JOB_TYPE_LABELS } from '@/lib/types'
 import { createJob, deleteJob, updateJobStatus } from '@/app/actions/jobs'
@@ -57,14 +56,13 @@ function formatTime(iso: string): string {
 }
 
 export default function CalendarClient({
-    jobs,
+    jobs: initialJobs,
     accounts,
 }: {
     jobs: Job[]
     accounts: Account[]
 }) {
-    const router = useRouter()
-    const [isPending, startTransition] = useTransition()
+    const [jobs, setJobs] = useState(initialJobs)
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
     const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -111,26 +109,30 @@ export default function CalendarClient({
             setFormError(result.error)
             return
         }
+        if (result.data) {
+            setJobs(prev => [result.data!, ...prev])
+        }
 
         setDialogOpen(false)
         setFormAccountId('')
         setFormType('')
         setFormTargetUrl('')
         setFormDateTime('')
-        startTransition(() => router.refresh())
     }
 
     async function handleDelete(id: string) {
+        setJobs(prev => prev.filter(j => j.id !== id))
         const result = await deleteJob(id)
-        if (!result.error) {
-            startTransition(() => router.refresh())
+        if (result.error) {
+            setJobs(initialJobs)
         }
     }
 
     async function handleStatusChange(id: string, status: JobStatus) {
+        setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j))
         const result = await updateJobStatus(id, status)
-        if (!result.error) {
-            startTransition(() => router.refresh())
+        if (result.data) {
+            setJobs(prev => prev.map(j => j.id === id ? result.data! : j))
         }
     }
 
@@ -288,11 +290,6 @@ export default function CalendarClient({
                                         {selectedDate?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                     </CardDescription>
                                 </div>
-                                {isPending && (
-                                    <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 flex gap-2 items-center">
-                                        <Loader2 className="w-3 h-3 animate-spin" /> Refreshing
-                                    </Badge>
-                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-6">

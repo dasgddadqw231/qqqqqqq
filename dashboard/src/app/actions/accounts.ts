@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import type { Platform } from '@/lib/types'
 
@@ -29,14 +28,14 @@ export async function createAccount(formData: FormData) {
     return { error: 'Platform and username are required' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('accounts')
     .insert({ platform, username, adspower_id, proxy_id, persona_id })
+    .select('*, proxy:proxies(*), persona:personas(*)')
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/accounts')
-  return {}
+  return { data }
 }
 
 export async function updateAccount(id: string, formData: FormData) {
@@ -52,15 +51,15 @@ export async function updateAccount(id: string, formData: FormData) {
     return { error: 'Platform and username are required' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('accounts')
     .update({ platform, username, adspower_id, proxy_id, persona_id, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .select('*, proxy:proxies(*), persona:personas(*)')
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/accounts')
-  return {}
+  return { data }
 }
 
 export async function deleteAccount(id: string) {
@@ -72,21 +71,19 @@ export async function deleteAccount(id: string) {
     .eq('id', id)
 
   if (error) return { error: error.message }
-
-  revalidatePath('/accounts')
   return {}
 }
 
 export async function toggleAccount(id: string, is_active: boolean) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('accounts')
     .update({ is_active, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .select('*, proxy:proxies(*), persona:personas(*)')
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/accounts')
-  return {}
+  return { data }
 }

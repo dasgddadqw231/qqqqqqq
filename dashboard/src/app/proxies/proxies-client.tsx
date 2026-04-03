@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Shield, Plus, Pencil, Trash2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -37,8 +36,8 @@ const STATUS_STYLES: Record<ProxyStatus, string> = {
   dead: 'bg-red-500/15 text-red-400 border-red-500/30',
 }
 
-export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
-  const router = useRouter()
+export default function ProxiesClient({ proxies: initialProxies }: { proxies: Proxy[] }) {
+  const [proxies, setProxies] = useState(initialProxies)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProxy, setEditingProxy] = useState<Proxy | null>(null)
   const [bulkStatus, setBulkStatus] = useState<ProxyStatus | ''>('')
@@ -61,32 +60,43 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
     const formData = new FormData(e.currentTarget)
 
     if (editingProxy) {
-      await updateProxy(editingProxy.id, formData)
+      const result = await updateProxy(editingProxy.id, formData)
+      if (result.data) {
+        setProxies(prev => prev.map(p => p.id === editingProxy.id ? result.data! : p))
+      }
     } else {
-      await createProxy(formData)
+      const result = await createProxy(formData)
+      if (result.data) {
+        setProxies(prev => [result.data!, ...prev])
+      }
     }
 
     setLoading(false)
     setDialogOpen(false)
-    router.refresh()
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this proxy?')) return
-    await deleteProxy(id)
-    router.refresh()
+    setProxies(prev => prev.filter(p => p.id !== id))
+    const result = await deleteProxy(id)
+    if (result.error) {
+      setProxies(initialProxies)
+    }
   }
 
   async function handleBulkStatusUpdate() {
     if (!bulkStatus || selectedIds.size === 0) return
     setLoading(true)
+    // Optimistic
+    setProxies(prev => prev.map(p =>
+      selectedIds.has(p.id) ? { ...p, status: bulkStatus } : p
+    ))
     for (const id of selectedIds) {
       await updateProxyStatus(id, bulkStatus)
     }
     setSelectedIds(new Set())
     setBulkStatus('')
     setLoading(false)
-    router.refresh()
   }
 
   function toggleSelect(id: string) {
@@ -107,8 +117,8 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
   }
 
   async function handleStatusChange(id: string, status: ProxyStatus) {
+    setProxies(prev => prev.map(p => p.id === id ? { ...p, status } : p))
     await updateProxyStatus(id, status)
-    router.refresh()
   }
 
   function formatDate(dateStr: string) {
@@ -118,7 +128,6 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
 
   return (
     <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3 lg:gap-4">
           <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0">
@@ -135,7 +144,6 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
         </Button>
       </div>
 
-      {/* Bulk Actions */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/60 border border-white/5">
           <span className="text-sm text-zinc-400">{selectedIds.size} selected</span>
@@ -161,7 +169,6 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
         </div>
       )}
 
-      {/* Table */}
       <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm overflow-x-auto">
         <Table className="min-w-[600px]">
           <TableHeader>
@@ -230,7 +237,6 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
         </Table>
       </div>
 
-      {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-zinc-900 border border-white/10 sm:max-w-md">
           <DialogHeader>
@@ -242,54 +248,24 @@ export default function ProxiesClient({ proxies }: { proxies: Proxy[] }) {
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-zinc-400 mb-1 block">IP Address</label>
-                <Input
-                  name="ip"
-                  placeholder="192.168.1.1"
-                  defaultValue={editingProxy?.ip ?? ''}
-                  required
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
+                <Input name="ip" placeholder="192.168.1.1" defaultValue={editingProxy?.ip ?? ''} required className="bg-zinc-800/50 border-white/10 text-white" />
               </div>
               <div>
                 <label className="text-xs text-zinc-400 mb-1 block">Port</label>
-                <Input
-                  name="port"
-                  type="number"
-                  placeholder="8080"
-                  defaultValue={editingProxy?.port ?? ''}
-                  required
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
+                <Input name="port" type="number" placeholder="8080" defaultValue={editingProxy?.port ?? ''} required className="bg-zinc-800/50 border-white/10 text-white" />
               </div>
               <div>
                 <label className="text-xs text-zinc-400 mb-1 block">Username</label>
-                <Input
-                  name="username"
-                  placeholder="Optional"
-                  defaultValue={editingProxy?.username ?? ''}
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
+                <Input name="username" placeholder="Optional" defaultValue={editingProxy?.username ?? ''} className="bg-zinc-800/50 border-white/10 text-white" />
               </div>
               <div>
                 <label className="text-xs text-zinc-400 mb-1 block">Password</label>
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="Optional"
-                  defaultValue={editingProxy?.password ?? ''}
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
+                <Input name="password" type="password" placeholder="Optional" defaultValue={editingProxy?.password ?? ''} className="bg-zinc-800/50 border-white/10 text-white" />
               </div>
             </div>
             <DialogFooter className="bg-transparent border-0">
-              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} className="text-zinc-400">
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0"
-              >
+              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} className="text-zinc-400">Cancel</Button>
+              <Button type="submit" disabled={loading} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0">
                 {loading ? 'Saving...' : editingProxy ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>

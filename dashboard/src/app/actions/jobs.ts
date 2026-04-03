@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import type { JobStatus } from '@/lib/types'
 
@@ -50,14 +49,14 @@ export async function createJob(formData: FormData) {
     }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('jobs')
     .insert({ account_id, type, target_url, scheduled_for, action_parameters })
+    .select('*, account:accounts(*)')
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/jobs')
-  return {}
+  return { data }
 }
 
 export async function updateJobStatus(id: string, status: JobStatus) {
@@ -74,15 +73,15 @@ export async function updateJobStatus(id: string, status: JobStatus) {
     updates.completed_at = new Date().toISOString()
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('jobs')
     .update(updates)
     .eq('id', id)
+    .select('*, account:accounts(*)')
+    .single()
 
   if (error) return { error: error.message }
-
-  revalidatePath('/jobs')
-  return {}
+  return { data }
 }
 
 export async function deleteJob(id: string) {
@@ -94,8 +93,6 @@ export async function deleteJob(id: string) {
     .eq('id', id)
 
   if (error) return { error: error.message }
-
-  revalidatePath('/jobs')
   return {}
 }
 
