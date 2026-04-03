@@ -6,7 +6,7 @@ import httpx
 
 from config import ADSPOWER_BASE, ADSPOWER_API_KEY
 
-HEADERS = {"Authorization": f"Bearer {ADSPOWER_API_KEY}"}
+HEADERS = {"Authorization": f"Bearer {ADSPOWER_API_KEY}"} if ADSPOWER_API_KEY else {}
 
 
 def _get(path: str, params: dict | None = None) -> dict:
@@ -138,9 +138,7 @@ def start_browser(profile_id: str, *, headless: bool = False) -> dict:
     Returns:
         {"ws": {"puppeteer": "ws://...", "selenium": "..."}, "debug_port": "...", ...}
     """
-    params: dict = {"user_id": profile_id}
-    if headless:
-        params["headless"] = 1
+    params: dict = {"user_id": profile_id, "headless": 1 if headless else 0}
     data = _get("/api/v1/browser/start", params)
     return data["data"]
 
