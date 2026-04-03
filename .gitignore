@@ -1,0 +1,13 @@
+# Python
+engine/venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+.DS_Store
+.env*
+
+# misc
+*.pem
