@@ -56,6 +56,20 @@ export interface Job {
     account?: Account | null
 }
 
+export interface EngageTask {
+    id: string
+    channel: string
+    profile_ids: string[]
+    posts: Record<string, unknown>[]
+    headless: boolean
+    status: JobStatus
+    logs: string[]
+    error: string | null
+    created_at: string
+    started_at: string | null
+    completed_at: string | null
+}
+
 export const JOB_TYPE_LABELS: Record<JobType, string> = {
     watch_reels: 'Watch Reels',
     story_share: 'Story Share',

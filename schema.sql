@@ -65,7 +65,23 @@ CREATE TABLE jobs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Engage Tasks Table: Queue for engage operations (processed by local worker)
+CREATE TABLE engage_tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    channel VARCHAR(20) NOT NULL DEFAULT 'threads',
+    profile_ids TEXT[] NOT NULL,
+    posts JSONB NOT NULL,
+    headless BOOLEAN DEFAULT FALSE,
+    status job_status DEFAULT 'pending',
+    logs TEXT[] DEFAULT '{}',
+    error TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    started_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
 -- Indexes
+CREATE INDEX idx_engage_tasks_status ON engage_tasks (status);
 CREATE INDEX idx_jobs_status_scheduled ON jobs (status, scheduled_for);
 CREATE INDEX idx_accounts_platform ON accounts (platform);
 CREATE INDEX idx_accounts_persona ON accounts (persona_id);
@@ -75,9 +91,11 @@ ALTER TABLE personas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE proxies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE engage_tasks ENABLE ROW LEVEL SECURITY;
 
 -- Policies (allow all for authenticated users)
 CREATE POLICY "Allow all for authenticated" ON personas FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for authenticated" ON proxies FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for authenticated" ON accounts FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for authenticated" ON jobs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for authenticated" ON engage_tasks FOR ALL TO authenticated USING (true) WITH CHECK (true);

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Play, Plus, Trash2, Heart, MessageCircle, Repeat2, Loader2, CheckCircle2, XCircle, Link, Users, Check, Eye, Clock, Share2, MonitorOff } from 'lucide-react'
 import type { Account } from '@/lib/types'
+import { createEngageTask, getEngageTask } from '@/app/actions/engage'
 
 type Channel = 'threads' | 'instagram' | 'youtube'
 
@@ -68,8 +69,24 @@ export default function EngageClient({ accounts }: { accounts: Account[] }) {
     const [posts, setPosts] = useState<Post[]>([createEmptyPost('threads')])
     const [status, setStatus] = useState<Status>('idle')
     const [headless, setHeadless] = useState(false)
+    const [taskId, setTaskId] = useState<string | null>(null)
     const [logs, setLogs] = useState<string[]>([])
     const logsEndRef = useRef<HTMLDivElement>(null)
+
+    // ── 작업 상태 폴링 ──
+    useEffect(() => {
+        if (!taskId || status !== 'running') return
+        const interval = setInterval(async () => {
+            const result = await getEngageTask(taskId)
+            if (!result.data) return
+            setLogs(result.data.logs || [])
+            if (result.data.status === 'success' || result.data.status === 'failed') {
+                setStatus(result.data.status === 'success' ? 'success' : 'error')
+                setTaskId(null)
+            }
+        }, 2000)
+        return () => clearInterval(interval)
+    }, [taskId, status])
 
     // ── 채널 전환 ──
     const switchChannel = (ch: Channel) => {
@@ -141,20 +158,26 @@ export default function EngageClient({ accounts }: { accounts: Account[] }) {
         if (profileIds.length === 0 || validPosts.length === 0) return
 
         setStatus('running')
-        setLogs([`${profileIds.length}개 프로필 × ${validPosts.length}개 게시물 작업 시작...`])
+        setLogs([`${profileIds.length}개 프로필 × ${validPosts.length}개 게시물 작업 대기열에 추가 중...`])
 
         try {
-            const res = await fetch('/api/engage', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ channel, profile_ids: profileIds, posts: validPosts, headless }),
+            const result = await createEngageTask({
+                channel,
+                profile_ids: profileIds,
+                posts: validPosts,
+                headless,
             })
 
-            const data = await res.json()
-            setLogs(data.logs || [])
-            setStatus(data.success ? 'success' : 'error')
+            if (result.error) {
+                setStatus('error')
+                setLogs([result.error])
+                return
+            }
+
+            setTaskId(result.taskId!)
+            setLogs([`작업이 대기열에 추가되었습니다. 워커가 처리할 때까지 대기 중...`])
         } catch (err) {
-            setLogs(prev => [...prev, `네트워크 오류: ${err}`])
+            setLogs(prev => [...prev, `오류: ${err}`])
             setStatus('error')
         }
     }
